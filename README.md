@@ -37,7 +37,7 @@ The benefit of epoch like is that it is smaller and will be faster to process in
 
 iso8901 dates are easy to read on their own and don't require the user to translate a number in to a recognizable date. The size increase in iso8601 is unnoticeable when compared to much much larger things like images.
 
-I recommends to use iso8601 since it use the format emitted by Date's toJSON method and:
+**I recommend you to use iso8601** since it use the format emitted by Date's toJSON method and:
 
 - it's human readable but also succinct
 - It sorts correctly
