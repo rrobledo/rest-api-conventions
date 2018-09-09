@@ -1,5 +1,24 @@
 This Document describes a list of conventions and best practices to build REST APIs.
 
+Table of contents
+=================
+
+<!--ts-->
+  * [Resouce Names](#resouce-names)
+  * [HTTP Methods](#http-methods)
+  * [HTTP Status Codes](#http-status-codes)
+  * [Error Messages](#error-messages)
+  * [Data Representation](#data-representation)
+    * [Attribute names](#Attribute-names)
+    * [DateTime representation](#DateTime-representation)
+  * [Managing Response](#Managing-Response)
+      * [Wrap the Actual Data in a data Field](#Wrap-the-Actual-Data-in-a-data-Field)
+      * [Partial response](#Partial-response)
+      * [Pagination](#Pagination)
+      * [Filtering](#Filtering)
+  * [References](#References)
+<!--te-->
+
 
 ## Resouce Names
 
@@ -190,7 +209,7 @@ iso8901 dates are easy to read on their own and don't require the user to transl
 - ISO 8601 has been well-established internationally for more than a decade
 - ISO 8601 is endorsed by W3C, RFC3339, and XKCD
 
-## Managing Results
+## Managing Response
 
 ### Wrap the Actual Data in a data Field
 
@@ -323,7 +342,7 @@ Return
 }
 ```
 
-### Filtering (Search)
+### Filtering
 
 Use **filter** and **RSQL** syntax for filtering.
 
@@ -334,7 +353,7 @@ This example will return all employees it's name is 'Juan Perez' or telephone is
 
 ## References
 
+https://apigee.com/about/blog/technology/restful-api-design-tips-search
 https://blog.philipphauer.de/restful-api-design-best-practices/  
 https://github.com/Yingliang-Du/node-rsql-parser  
 https://github.com/jirutka/rsql-parser  
-
