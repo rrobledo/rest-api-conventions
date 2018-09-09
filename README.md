@@ -1,7 +1,9 @@
 This Document describes a list of conventions and best practices to build REST APIs.
 
 
-## Use Consistently Plural Nouns
+## Resouce Names
+
+Use Consistently Plural Nouns
 Prefer
 ```
 /employees
@@ -89,6 +91,58 @@ Understand the Semantics of the HTTP Methods
     DELETE /employees/1
     ```
 
+## HTTP Status Codes
+
+The RESTful Web Service should respond to a client’s request with a suitable HTTP status response code.
+
+- 2xx – success – everything worked fine.
+- 4xx – client error – if the client did something wrong (e.g. the client sends an invalid request or he is not authorized)
+- 5xx – server error – failures on the server-side (errors while trying to process the request like database failures, dependend services are not available, programming errors or states that should not occur)  
+
+Consider the available HTTP status codes. However, be aware, that using all of them could be confusing for the users of your API. Keep the set of used HTTP status codes small. It’s common to use the following codes:
+
+- 2xx: Success
+    - 200 OK
+    - 201 Created
+- 3xx: Redirect
+    - 301 Moved Permanently
+    - 304 Not Modified
+- 4xx: Client Error
+    - 400 Bad Request
+    - 401 Unauthorized
+    - 403 Forbidden
+    - 404 Not Found
+    - 410 Gone
+- 5xx: Server Error
+    - 500 Internal Server Error
+
+**Don’t overuse 404**. Try to be more precise. If the resource is available, but the user is not allowed to view it, return a 403 Forbidden. If the resource existed once but now has been deleted or deactivated, use 410 Gone.
+
+## Error Messages
+
+Additionally to an appropriate status code, you should provide a useful and verbose description of the error in the body of your HTTP response. Here’s an example.
+
+Request:
+```
+GET /employees?state=super
+```
+
+Response:
+```
+// 400 Bad Request
+{
+  "errors": [
+    {
+      "status": 400,
+      "message": "Invalid state. Valid values are 'internal' or 'external'",
+      "code": 352,
+      "links": {
+        "about": "http://www.domain.com/rest/errorcode/352"
+      }
+    }
+  ]
+}
+```
 
 ## Data Representation
 
@@ -136,6 +190,39 @@ iso8901 dates are easy to read on their own and don't require the user to transl
 - ISO 8601 has been well-established internationally for more than a decade
 - ISO 8601 is endorsed by W3C, RFC3339, and XKCD
 
+## Managing Results
+
+### Wrap the Actual Data in a data Field
+
+GET /employees returns a list of objects in the data field:
+```
+{
+  "data": [
+    { "id": 1, "name": "Larry" }, 
+    { "id": 2, "name": "Peter" }
+  ]
+}
+```
+
+GET /employees/1 returns a single object in the data field:
+```
+{
+  "data": { 
+    "id": 1, 
+    "name": "Larry"
+  }
+}
+```
+
+The payload of PUT, POST and PATCH requests should also contain the data field with the actual object.
+
+*Advantages*:
+
+- There is space left to add metadata (e.g. for pagination, links, deprecation warnings, error messages)
+- Consistency
+- Compatible with the JSON:API Standard
+
+
 ### Partial response
 
 Used to give developers just what they need in responses, The idea is add optional **fields** in a comma delimited list
@@ -143,42 +230,49 @@ Used to give developers just what they need in responses, The idea is add option
 Example:
 
 ```
-Person
+Employee
 {
-    "@type": "Person",
-    "name": "Juan Perez",
-    "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "Colorado Springs",
-    "addressRegion": "CO",
-    "postalCode": "80840",
-    "streetAddress": "100 Main Street"
-    },
-    "email": "mailto:info@example.com",
-    "image": "juanperez.jpg",
-    "jobTitle": "Research Assistant",
-    "gender": "Male",
-    "telephone": "(123) 456-6789",
+    "data": {
+        "@type": "Person",
+        "id": 1
+        "name": "Juan Perez",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Colorado Springs",
+            "addressRegion": "CO",
+            "postalCode": "80840",
+            "streetAddress": "100 Main Street"
+        },
+        "email": "mailto:info@example.com",
+        "image": "juanperez.jpg",
+        "jobTitle": "Research Assistant",
+        "gender": "Male",
+        "telephone": "(123) 456-6789",
+    "
 }
 ```
 
 ```
 PROJECTION:  
-/customers?fields=name,telephone,address
+/employees?fields=name,telephone,address
 
 RESULT:  
-Person
+Employee
 {
-    "@type": "Person",
-    "name": "Juan Perez",
-    "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Colorado Springs",
-        "addressRegion": "CO",
-        "postalCode": "80840",
-        "streetAddress": "100 Main Street"
-    },
-    "telephone": "(123) 456-6789",
+    "data": [
+        {
+            "@type": "Person",
+            "name": "Juan Perez",
+            "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Colorado Springs",
+                "addressRegion": "CO",
+                "postalCode": "80840",
+                "streetAddress": "100 Main Street"
+            },
+            "telephone": "(123) 456-6789",
+        }
+    ]
 }
 
 PROJECTION:  
@@ -187,13 +281,17 @@ PROJECTION:
 RESULT:  
 Person
 {
-    "@type": "Person",
-    "name": "Juan Perez",
-    "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "100 Main Street"
-    },
-    "telephone": "(123) 456-6789",
+    "data": [
+        {
+            "@type": "Person",
+            "name": "Juan Perez",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "100 Main Street"
+            },
+            "telephone": "(123) 456-6789",
+        }
+    ]
 }
 
 ```
@@ -204,4 +302,39 @@ The pagination defaults are of course dependent on your data size. If your resou
 
 Use limit and offset
 
+```
+/employees?offset=20&limit=10
+```
+Return
+```
+{
+  "pagination": {
+    "offset": 20,
+    "limit": 10,
+    "total": 3465,
+  },
+  "data": [
+    //...
+  ],
+  "links": {
+    "next": "http://www.domain.com/employees?offset=30&limit=10",
+    "prev": "http://www.domain.com/employees?offset=10&limit=10"
+  }
+}
+```
+
+### Filtering (Search)
+
+Use **filter** and **RSQL** syntax for filtering.
+
+```
+/employees?filter=name=='Juan Perez' or telephone=='(123) 456-6789'
+```
+This example will return all employees it's name is 'Juan Perez' or telephone is '(123) 456-6789'
+
+## References
+
+https://blog.philipphauer.de/restful-api-design-best-practices/  
+https://github.com/Yingliang-Du/node-rsql-parser  
+https://github.com/jirutka/rsql-parser  
 
