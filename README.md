@@ -9,14 +9,14 @@ Table of contents
   * [HTTP Status Codes](#http-status-codes)
   * [Error Messages](#error-messages)
   * [Data Representation](#data-representation)
-    * [Attribute names](#Attribute-names)
-    * [DateTime representation](#DateTime-representation)
-  * [Managing Response](#Managing-Response)
-      * [Wrap the Actual Data in a data Field](#Wrap-the-Actual-Data-in-a-data-Field)
-      * [Partial response](#Partial-response)
-      * [Pagination](#Pagination)
-      * [Filtering](#Filtering)
-  * [References](#References)
+    * [Attribute names](#attribute-names)
+    * [DateTime representation](#datetime-representation)
+  * [Managing Response](#managing-response)
+      * [Wrap the Actual Data in a data Field](#wrap-the-actual-data-in-a-data-field)
+      * [Partial response](#partial-response)
+      * [Pagination](#pagination)
+      * [Filtering](#filtering)
+  * [References](#references)
 <!--te-->
 
 
